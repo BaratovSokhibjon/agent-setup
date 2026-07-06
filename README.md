@@ -48,8 +48,19 @@ you pass to `--skill`.
 | `typescript-refactor` | typescript | Refactor TypeScript to the Google TypeScript Style Guide. |
 | `go-review` | go | Review Go against the Google Go Style Guide and Effective Go. |
 | `go-refactor` | go | Refactor Go to the Google Go Style Guide and Effective Go. |
+| `mysql` | database | Plan and review MySQL/InnoDB schema, indexing, query tuning, transactions, and operations. |
+| `postgres` | database | PostgreSQL best practices, query optimization, connection troubleshooting, and performance. |
+| `vitess` | database | Vitess best practices: query optimization, sharding, VSchema, keyspace management. |
+| `neki` | database | Overview of Neki, PlanetScale's sharded Postgres product; scaling and sharding Postgres. |
 
 The `review` skills write a report to `/tmp/<dirname>/code-review.md`, which the matching
 `refactor` skill reads to prioritize its fixes. Pick the language variant that matches the
 dominant language of your diff; fall back to the generic `review`/`refactor` otherwise.
+
+### Attribution
+
+The `database` skills (`mysql`, `postgres`, `vitess`, `neki`) are vendored from
+[planetscale/database-skills](https://github.com/planetscale/database-skills), MIT licensed,
+Copyright (c) PlanetScale. Each carries its own `references/` directory, and the upstream
+license is preserved at `skills/database/LICENSE`.
 </content>
