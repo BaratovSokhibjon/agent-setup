@@ -54,14 +54,44 @@ and PEP 8, then general Python idioms.
    quote style, and import order win over defaults. Do not impose `src/` layout, mirrored
    `tests/`, or other structure the repo does not already use.
 
-4. **Apply mandatory Python cleanup**:
+4. **Learn the module architecture and respect it**. Read the package layout around the
+   changed files before moving or adding code. If the project uses a layered or
+   vertical-slice architecture, follow it; if it is flat, do not impose one.
+   - **Shared layer vs feature slices**: some projects separate a cross-cutting framework
+     layer (config, constants, dependencies, middleware, exception handlers, base schemas,
+     shared utilities) from per-feature packages (one package per domain entity or feature).
+     Keep cross-cutting code in the shared layer and feature code in its slice; do not leak
+     domain logic into the shared layer or duplicate framework code inside a slice.
+   - **Role-named modules**: within a slice, files are named by responsibility (for example
+     a data/ORM model, I/O schemas, service or business logic, a transport/router, and
+     optional dependencies, utils, constants, exceptions). Put each changed piece in the
+     module that matches its role; do not merge responsibilities such as business logic into
+     the transport layer or ORM models into schema files.
+   - **Dependency direction**: respect the layering (transport depends on service, service
+     depends on the data model; I/O schemas are the contract). An import that points the
+     wrong way, such as a data model importing the router or service, is a smell to flag
+     rather than extend.
+   - **Internal-module boundary**: if the project marks implementation modules with a
+     leading underscore and re-exports the public surface from `__init__.py`
+     (`from ._x import *` plus an explicit `__all__`), preserve that boundary. Keep public
+     import paths stable by re-exporting from `__init__`, and keep new internal modules
+     underscore-prefixed.
+   - **Module-to-package escalation**: if the project splits an oversized module into a
+     package of underscore-prefixed sub-modules re-exported through `__init__.py`, follow
+     that same idiom when a changed module has grown too large; do not invent a different
+     split. Treat this as a high-risk change (see risk classification) unless the user asked
+     for it.
+   - **Canonical homes**: place shared helpers, external-system clients, and constants in
+     the packages the project already uses for them rather than scattering them.
+
+5. **Apply mandatory Python cleanup**:
    - Remove Python file-top/module docstrings.
    - Do not remove function, class, or method docstrings.
    - Remove `from __future__ import annotations` anywhere it appears.
    - Keep retained docstrings concise and Google-style: one-line summary, optional blank
      line, then `Args:` / `Returns:` / `Raises:` sections only when they add information.
 
-5. **Apply Google Python Style Guide conventions** (only on changed code, never rewrite
+6. **Apply Google Python Style Guide conventions** (only on changed code, never rewrite
    unrelated lines):
    - **Naming**: `snake_case` for functions, methods, variables, and modules; `CapWords`
      for classes; `CONSTANT_CASE` for module-level constants; leading underscore for
@@ -84,7 +114,7 @@ and PEP 8, then general Python idioms.
      silently.
    - **Comparisons**: `is`/`is not` only for `None` and singletons; use `==` for values.
 
-6. **Normalize em-dashes globally**:
+7. **Normalize em-dashes globally**:
 
    ```bash
    rg -n -P '\x{2014}'
@@ -94,30 +124,32 @@ and PEP 8, then general Python idioms.
    Skip semantic data values, snapshots, fixtures, URLs, or tests where the exact
    character matters.
 
-7. **Normalize section markers** to a single canonical form: `# MARK: <label>` (comment
+8. **Normalize section markers** to a single canonical form: `# MARK: <label>` (comment
    leader, space, `MARK:`, space, label). Find variants first with
    `rg -n -i 'mark:?\b'` and rewrite alternates (missing colon, wrong case, no spacing,
    dash decoration). Skip matches inside strings, data, or docs.
 
-8. **Analyze changed code**: naming consistency across analogous modules; dead imports and
+9. **Analyze changed code**: naming consistency across analogous modules; dead imports and
    unreachable code; long functions, deep nesting, duplicated logic; magic values that want
-   named constants; unclear error handling and logging.
+   named constants; unclear error handling and logging; misplaced code (logic in the wrong
+   layer, helpers, constants, or integrations outside their canonical package), broken layer
+   boundaries, and `__init__` re-exports that have drifted from the modules they wrap.
 
-9. **Classify risk before editing**:
-   - Low: unused imports, local renames, docstring cleanup, f-string conversion, guard
-     clauses, tiny helper extraction.
-   - Medium: reordering within a module, reworking private helpers, changing internal
-     imports.
-   - High: file moves, renaming exported symbols, route/schema changes, broad renames, new
-     modules, public API changes, test rewrites.
-   - Apply low-risk directly. Apply medium-risk only when the readability win is clear. Ask
-     before high-risk changes unless the user requested them.
+10. **Classify risk before editing**:
+    - Low: unused imports, local renames, docstring cleanup, f-string conversion, guard
+      clauses, tiny helper extraction.
+    - Medium: reordering within a module, reworking private helpers, changing internal
+      imports.
+    - High: file moves, renaming exported symbols, route/schema changes, broad renames, new
+      modules, splitting a module into a package, public API changes, test rewrites.
+    - Apply low-risk directly. Apply medium-risk only when the readability win is clear. Ask
+      before high-risk changes unless the user requested them.
 
-10. **Apply focused edits**: edit only files needed for the refactor. Preserve behavior,
+11. **Apply focused edits**: edit only files needed for the refactor. Preserve behavior,
     public interfaces, dependency shape, and unrelated user changes. After moves/renames,
     remove orphan directories and update imports and tests.
 
-11. **Verify** with the nearest discoverable tools, preferring targeted runs:
+12. **Verify** with the nearest discoverable tools, preferring targeted runs:
 
     ```bash
     ruff check <files> ; ruff format <files>   # or black / isort / flake8 if configured
@@ -127,7 +159,7 @@ and PEP 8, then general Python idioms.
 
     Run the full suite for rename/move batches. If verification cannot run, say why.
 
-12. **Summarize**: files changed and why, risky refactors skipped, verification results.
+13. **Summarize**: files changed and why, risky refactors skipped, verification results.
 
 ## Rules
 
@@ -140,6 +172,12 @@ and PEP 8, then general Python idioms.
 - Never use bare `except:` or mutable default arguments in changed code.
 - Never stage unrelated files.
 - Never force generic architecture on a repo with its own convention.
+- Respect the project's layering: keep cross-cutting code in the shared/framework layer and
+  feature code in its slice, and keep each responsibility in its role-named module.
+- Preserve `__init__` re-export boundaries and underscore-prefixed internal module names;
+  keep public import paths stable.
+- Follow the project's own module-to-package split idiom for oversized modules; do not
+  invent a different structure.
 - Always normalize existing section markers to a single `# MARK: <label>` format.
 - Prefer code a human understands on first pass over cleverness.
 - If a file is already clean, skip it and say so.
