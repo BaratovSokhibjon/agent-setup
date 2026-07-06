@@ -33,6 +33,7 @@ you pass to `--skill`.
 | --- | --- | --- |
 | `commit` | (root) | Group changes by concern and create clean Conventional Commits. |
 | `init-project` | (root) | List humblebeeai templates, pick the one matching the project, and adapt it (falls back to base-template). |
+| `build-service` | (root) | Orchestrator: stand up a complete secured service end to end by sequencing the skills below in dependency order. |
 | `review` | generic | Language-agnostic code review; writes a structured report. |
 | `refactor` | generic | Language-agnostic behavior-preserving cleanup from the diff. |
 | `api-key-support` | generic | Add/extend API key creation, verification, and lifecycle; escalates if the codebase lacks key support. |
