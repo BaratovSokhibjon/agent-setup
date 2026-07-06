@@ -35,6 +35,7 @@ you pass to `--skill`.
 | `init-project` | (root) | List humblebeeai templates, pick the one matching the project, and adapt it (falls back to base-template). |
 | `review` | generic | Language-agnostic code review; writes a structured report. |
 | `refactor` | generic | Language-agnostic behavior-preserving cleanup from the diff. |
+| `api-key-support` | generic | Add/extend API key creation, verification, and lifecycle; escalates if the codebase lacks key support. |
 | `python-review` | python | Review Python against the Google Python Style Guide. |
 | `python-refactor` | python | Refactor Python to the Google Python Style Guide. |
 | `configify` | python | Add or modify config sections using the layered pydantic-settings convention (mutable/frozen, env prefixes, YAML). |
