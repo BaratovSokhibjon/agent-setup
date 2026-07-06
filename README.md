@@ -37,6 +37,7 @@ you pass to `--skill`.
 | `refactor` | generic | Language-agnostic behavior-preserving cleanup from the diff. |
 | `python-review` | python | Review Python against the Google Python Style Guide. |
 | `python-refactor` | python | Refactor Python to the Google Python Style Guide. |
+| `configify` | python | Add or modify config sections using the layered pydantic-settings convention (mutable/frozen, env prefixes, YAML). |
 | `javascript-review` | javascript | Review JavaScript against the Google JavaScript Style Guide. |
 | `javascript-refactor` | javascript | Refactor JavaScript to the Google JavaScript Style Guide. |
 | `typescript-review` | typescript | Review TypeScript against the Google TypeScript Style Guide. |
