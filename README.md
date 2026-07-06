@@ -39,6 +39,7 @@ you pass to `--skill`.
 | `oauth-support` | generic | Add/extend OAuth2-style auth (login, tokens, refresh rotation, password reset); escalates if the codebase lacks auth. |
 | `rbac-support` | generic | Add/extend role- and scope-based access control (scopes, roles, guards); escalates if the codebase lacks an RBAC model. |
 | `api-responses` | generic | Add/extend the response envelope and structured error-code catalog, raise-with-code, and typed error translation. |
+| `resource-scaffold` | generic | Scaffold a new feature as a vertical slice (model, schemas, service, router) mirroring the project's convention. |
 | `python-review` | python | Review Python against the Google Python Style Guide. |
 | `python-refactor` | python | Refactor Python to the Google Python Style Guide. |
 | `configify` | python | Add or modify config sections using the layered pydantic-settings convention (mutable/frozen, env prefixes, YAML). |
