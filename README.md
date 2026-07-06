@@ -32,6 +32,7 @@ you pass to `--skill`.
 | Skill (`name`) | Category | Purpose |
 | --- | --- | --- |
 | `commit` | (root) | Group changes by concern and create clean Conventional Commits. |
+| `init-project` | (root) | List humblebeeai templates, pick the one matching the project, and adapt it (falls back to base-template). |
 | `review` | generic | Language-agnostic code review; writes a structured report. |
 | `refactor` | generic | Language-agnostic behavior-preserving cleanup from the diff. |
 | `python-review` | python | Review Python against the Google Python Style Guide. |
