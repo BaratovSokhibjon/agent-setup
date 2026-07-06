@@ -2,9 +2,11 @@
 name: refactor
 description: >-
   Make the smallest safe, behavior-preserving edits that make changed code easier to
-  scan, name, and maintain. Works from the current git diff. Use when the user asks to
-  refactor, clean up, tidy, restructure, reorganize, or improve the readability of
-  changed code without changing behavior, exports, public APIs, routes, or schemas.
+  scan, name, and maintain. Language-agnostic. Works from the current git diff. Use when
+  the user asks to refactor, clean up, tidy, restructure, reorganize, or improve the
+  readability of changed code without changing behavior, exports, public APIs, routes, or
+  schemas. For language-specific rules, prefer the python, javascript, typescript, or go
+  refactor variants when the diff is dominated by one language.
 metadata:
   keywords:
     - refactor
@@ -13,6 +15,7 @@ metadata:
     - code quality
     - behavior-preserving
     - em-dash normalization
+    - mark comment normalization
 ---
 
 # refactor
@@ -37,12 +40,15 @@ idioms third, and external style guides only when the repo has no clear conventi
    If there is no diff, ask which files or range to refactor.
 
 2. **Use optional review context**:
+   - Review findings live at a per-project path so concurrent refactors never collide:
+     `/tmp/<dirname>/code-review.md`, where `<dirname>` is the current directory's name
+     (e.g. `/tmp/agent-setup/code-review.md`).
 
-   ```bash
-   cat /tmp/code-review.md 2>/dev/null
-   ```
+     ```bash
+     cat "/tmp/$(basename "$PWD")/code-review.md" 2>/dev/null
+     ```
 
-   If present, fix CRITICAL findings first, then WARNING, then SUGGESTION.
+   - If present, fix CRITICAL findings first, then WARNING, then SUGGESTION.
 
 3. **Find project conventions**:
    - Inspect nearby files, package/config files, formatter/linter settings, tests,
@@ -51,14 +57,7 @@ idioms third, and external style guides only when the repo has no clear conventi
    - Do not impose generic structure such as `src/`, mirrored `tests/`, `.env.example`,
      or `VERSION` unless the repo already uses it.
 
-4. **Apply mandatory Python cleanup**:
-   - Remove Python file-top/module docstrings.
-   - Do not remove function, class, or method docstrings.
-   - Remove `from __future__ import annotations` anywhere it appears in Python source.
-   - Keep retained Python docstrings concise and Google-style: summary line, optional
-     blank line, then `Args` / `Returns` / `Raises` only when useful.
-
-5. **Normalize em-dashes globally**:
+4. **Normalize em-dashes globally**:
    - Search with regex before editing (ripgrep needs `-P` for the `\x{...}` escape):
 
      ```bash
@@ -80,6 +79,28 @@ idioms third, and external style guides only when the repo has no clear conventi
 
    - Skip semantic data values, snapshots, fixtures, URLs, or tests where the exact
      character matters.
+
+5. **Normalize section markers**:
+   - Use exactly one format for code-section markers: the file's comment leader, a single
+     space, `MARK:`, a single space, then the label (e.g. `# MARK: helpers`,
+     `// MARK: helpers`). Keep the leader appropriate to the language (`#`, `//`, `--`).
+   - Find every variant before editing (case-insensitive):
+
+     ```bash
+     rg -n -i 'mark:?\b'
+     ```
+
+   - Rewrite alternates to the canonical form. Common variants to fix:
+     - Missing colon: `# MARK helpers` -> `# MARK: helpers`
+     - No space after the colon: `# MARK:helpers` -> `# MARK: helpers`
+     - No space after the leader: `#MARK: helpers` -> `# MARK: helpers`
+     - Wrong case: `# mark: helpers`, `# Mark: helpers` -> `# MARK: helpers`
+     - Xcode-style dash separator: `// MARK: - helpers` -> `// MARK: helpers`
+     - Surrounding decoration such as dashes or `===` around the label
+   - Preserve the label text and the language's comment leader; only normalize the marker
+     shape.
+   - Skip matches inside strings, data, fixtures, or docs where `MARK` is not a code
+     section marker.
 
 6. **Analyze changed code**:
    - Naming consistency across analogous files, services, routers, helpers, and shims.
@@ -105,7 +126,8 @@ idioms third, and external style guides only when the repo has no clear conventi
    - Group code as imports, constants, types, helpers, public API, private internals, and
      exports when that matches the file.
    - Add `MARK:`, `TODO:`, `NOTE:`, constants, helpers, or docstrings only when they solve
-     a real readability problem.
+     a real readability problem. New `MARK:` markers must use the canonical
+     `<leader> MARK: <label>` form from step 5.
    - Prefer deleting boilerplate over rewriting it.
 
 9. **Apply focused edits**:
@@ -130,12 +152,12 @@ idioms third, and external style guides only when the repo has no clear conventi
 - Never change observable behavior unless explicitly asked.
 - Never remove or rename exported symbols unless explicitly asked.
 - Never remove function, class, or method docstrings.
-- Always remove Python file-top/module docstrings.
-- Always remove `from __future__ import annotations` from Python source.
 - Never replace structured logging with `print` or `console.log`.
 - Never stage unrelated files.
 - Never force generic architecture on a repo with its own convention.
 - Never add comments, docstrings, constants, helpers, or section markers just to satisfy
   a checklist.
+- Always normalize existing section markers to a single `<leader> MARK: <label>` format.
 - Prefer code that a human understands on first pass over cleverness.
 - If a file is already clean, skip it and say so.
+</content>
