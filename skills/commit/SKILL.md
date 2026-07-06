@@ -80,6 +80,10 @@ edit files** — this workflow only inspects, stages, and commits.
    - Summary: imperative, lowercase, no period, max 72 characters.
    - Body: wrap near 72 characters when needed.
    - Use `!` or `BREAKING CHANGE:` only for real breaking changes.
+   - Never add agent or AI co-author trailers. Omit any `Co-authored-by:` line naming an
+     agent, assistant, or bot (e.g. Claude, Copilot, Cursor, `*[bot]`, `noreply@`), and any
+     `Generated with` / `🤖` attribution. Keep only co-authors who are real human
+     collaborators the user names.
 
 7. **Finish**:
    - Show `git log --oneline -n <number_of_commits>`.
@@ -92,6 +96,8 @@ edit files** — this workflow only inspects, stages, and commits.
 - Never switch branches without confirmation.
 - Never stage unrelated changes.
 - Never commit secrets, credentials, `.env` files, or private keys.
+- Never include agent, AI, or bot co-author trailers or attribution in a commit message;
+  strip any that would otherwise be added.
 - Never amend, rebase, push, or create PRs unless explicitly asked.
 - If a hunk is ambiguous, ask before staging it.
 - If changes are too unrelated for one branch, recommend separate branches.
