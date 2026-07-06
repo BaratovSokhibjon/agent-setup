@@ -36,29 +36,48 @@ does not, escalate. Do not design and scaffold an entire key subsystem unilatera
    ```
 
    Look for each piece and classify support as full, partial, or none:
-   - A persisted key model or table (columns such as a public prefix, a key hash, status,
+   - A persisted key model or record type (fields such as a public prefix, a key hash, status,
      scopes, expiry).
    - A service or module that generates, hashes, and verifies keys.
    - Config for key parameters (prefix, separator, length, hash algorithm).
    - An auth dependency or middleware that reads a key from a request header.
    - Endpoints or a CLI that issue and manage keys.
 
-2. **If support is absent, or partial in a way that blocks the request, escalate. Do not
-   scaffold a security subsystem on your own.** Adding API keys touches the data model plus
-   a migration, secret hashing, config and secrets, an authentication path, the
-   scope/permission model, and public endpoints; each is a security decision. Report to the
-   user:
-   - State plainly that the codebase does not (fully) support API keys today, and list
-     exactly which pieces are missing.
-   - Outline what adding it entails and the decisions required (see "Decisions to surface").
-   - Ask for explicit approval and those decisions before writing code; prefer the user's
-     planning or spec flow for a net-new subsystem.
+2. **If support is absent, or partial in a way that blocks the request, analyze the
+   application and propose an approach, then escalate. Do not scaffold a security subsystem on
+   your own.** Adding API keys touches the data model plus a migration, secret hashing, config
+   and secrets, an authentication path, the scope/permission model, and public endpoints; each
+   is a security decision. First derive a concrete proposal from the app (see step 3), then
+   report to the user:
+   - State plainly that the codebase does not (fully) support API keys today, and list exactly
+     which pieces are missing.
+   - Present the proposed approach derived from the app, plus the open decisions behind it
+     (see "Decisions to surface"). Surface a recommendation to approve or edit, not a blank
+     questionnaire.
+   - Ask for explicit approval before writing code; prefer the user's planning or spec flow
+     for a net-new subsystem.
 
    Stop here until the user confirms. Escalation means surface and ask, not proceed quietly.
 
 3. **If support exists, mirror the established pattern.** Read the existing implementation
    first and match its storage shape, hashing, config keys, scope model, error handling, and
    response schemas. Extending is preferred over reinventing.
+
+   When there is no API key support, do not present abstract choices alone. Read the
+   application and derive a concrete proposal grounded in what it actually does, then offer it
+   for approval:
+   - **Identify who holds keys and why**: end users, external integrators, or machines, and
+     whether keys are per-user or per-application. This shapes ownership and limits.
+   - **Reuse the existing authorization model**: if the app already has scopes or roles,
+     propose that keys carry a narrowed subset of the owner's permissions rather than a new
+     permission scheme.
+   - **Fit constraints to the use case**: propose expiry, an IP allowlist, and per-owner key
+     limits only where the app's threat model calls for them.
+   - **Propose format and storage from the project's conventions**: prefix template,
+     separator, secret length, and hash algorithm, and where config and secrets live.
+   - **Present the derived approach**, note where you inferred versus guessed, and call out the
+     open decisions (see "Decisions to surface") so the user approves or edits a real design.
+     Do not implement until approved.
 
 4. **Creation flow** (issuing a new key). Preserve these invariants regardless of stack:
    - Generate the secret from a cryptographic RNG at the project's configured length; never
@@ -75,7 +94,7 @@ does not, escalate. Do not design and scaffold an entire key subsystem unilatera
      secret type. Every later read exposes only the prefix.
    - Set initial status (active), the owner, and any constraints the model supports (scopes,
      IP allowlist, expiry).
-   - Validate referenced scopes or permissions exist before insert; map database constraint
+   - Validate referenced scopes or permissions exist before persisting; map storage constraint
      violations to the project's error responses.
 
 5. **Verification flow** (authenticating a presented key): split on the separator, hash the
@@ -83,7 +102,7 @@ does not, escalate. Do not design and scaffold an entire key subsystem unilatera
    revoked keys. Check expiry against the current time independently of status (an active
    key past its expiry is still invalid). Update last-used metadata if the model tracks it.
    Compare on the stored hash, never against a stored plaintext; if the hash is compared in
-   application code rather than by a database equality lookup, use a constant-time compare.
+   application code rather than by a storage-level equality lookup, use a constant-time compare.
    On any failure return a single generic authentication error; never reveal whether the
    prefix or the secret was the mismatch.
 

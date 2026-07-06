@@ -40,19 +40,24 @@ case. If it does not, escalate. Do not scaffold an authorization system unilater
 
    Look for each piece and classify support as full, partial, or none:
    - A scope entity or enum of named permissions.
-   - A role entity that bundles scopes, and join tables for role-scope and user-role.
+   - A role entity that bundles scopes, and associations linking roles to scopes and subjects
+     to roles.
    - Permission resolution that flattens a subject's roles into an effective scope set.
    - Enforcement at the endpoint or handler that compares required scopes to the subject's.
    - A seed or config of default scopes and roles.
 
-2. **If an RBAC model is absent, escalate. Do not scaffold an authorization system on your
-   own.** It touches the data model plus a migration, permission resolution, every guarded
-   endpoint, and how scopes reach the request (embedded in a token, resolved live, or both);
-   each is a security decision. Report to the user:
+2. **If an RBAC model is absent, analyze the application and propose an approach, then
+   escalate. Do not scaffold an authorization system on your own.** It touches the data model
+   plus a migration, permission resolution, every guarded endpoint, and how scopes reach the
+   request (embedded in a token, resolved live, or both); each is a security decision. First
+   derive a concrete proposal from the app (see "Propose a model from the application"), then
+   report to the user:
    - State plainly that the codebase has no RBAC model today, and list which pieces exist.
-   - Outline what adding it entails and the decisions required (see "Decisions to surface").
-   - Ask for explicit approval and those decisions before writing code; prefer the user's
-     planning or spec flow for a net-new authorization model.
+   - Present the proposed scope catalog and starter roles derived from the app, plus the open
+     decisions behind them (see "Decisions to surface"). Surface a recommendation to approve
+     or edit, not a blank questionnaire.
+   - Ask for explicit approval before writing code; prefer the user's planning or spec flow
+     for a net-new authorization model.
 
    Stop here until the user confirms. Escalation means surface and ask, not proceed quietly.
 
@@ -62,7 +67,7 @@ case. If it does not, escalate. Do not scaffold an authorization system unilater
 
 ## The model
 
-RBAC here is three tiers, each a many-to-many below the next:
+RBAC here is three tiers, each a many-to-many mapping onto the one below:
 
 - **Scope**: the atomic permission (for example `users:read`). Often carries a flag marking
   system scopes that must not be edited or deleted through the API.
@@ -100,6 +105,30 @@ security decision:
   reveal which scope was missing beyond what the project already does.
 - If access tokens embed scopes at issuance, a role or scope change does not take effect for
   a subject until the next token issuance. Call this out; refresh or re-login is the boundary.
+
+## Propose a model from the application
+
+When there is no RBAC model, do not present abstract choices alone. Read the application and
+derive a concrete proposal grounded in what it actually does, then offer it for approval.
+
+- **Inventory the protectable resources**: enumerate the app's routes, controllers, and
+  domain entities. Each distinct resource is a candidate scope namespace.
+- **Inventory the actions per resource**: for each resource, list the operations it exposes
+  (read, list, create, update, delete, plus domain verbs the code reveals such as submit,
+  publish, revoke). Each becomes a `resource:action` scope, with a `resource:all` wildcard and
+  a global superscope.
+- **Identify the principals and personas**: find the distinct actors (end user, admin,
+  service or machine, and any domain-specific roles) from the code, existing checks, or by
+  asking. These become the starter roles.
+- **Map personas to scope bundles under least privilege**: give each proposed role the
+  narrowest scope set that lets its persona do its job; reserve the global superscope for an
+  admin role. Flag which roles and scopes should be protected system entities.
+- **Present the derived catalog and roles**, note where you inferred versus guessed, and call
+  out the cross-cutting decisions (combining semantics, where scopes are enforced from,
+  delegation) so the user approves or edits a real design. Do not implement until approved.
+
+When extending an existing model, apply the same inventory to the resource being added:
+propose its scopes and which existing roles should receive them, consistent with the catalog.
 
 ## Common tasks
 

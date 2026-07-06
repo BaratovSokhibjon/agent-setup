@@ -48,22 +48,51 @@ not cover third-party or wallet-based sign-in.
    - Password hashing utilities and a secrets/settings home for algorithms and durations.
    - An auth dependency or middleware that authenticates requests and resolves scopes.
 
-2. **If support is absent, or partial in a way that blocks the request, escalate. Do not
-   scaffold an auth system on your own.** Authentication touches the account model plus a
-   migration, password hashing, token signing and key management, session or cookie
-   handling, the scope/permission model, and public endpoints; each is a security decision.
-   Report to the user:
+2. **If support is absent, or partial in a way that blocks the request, analyze the
+   application and propose an approach, then escalate. Do not scaffold an auth system on your
+   own.** Authentication touches the account model plus a migration, password hashing, token
+   signing and key management, session or cookie handling, the scope/permission model, and
+   public endpoints; each is a security decision. First derive a concrete proposal from the
+   app (see "Propose an approach from the application"), then report to the user:
    - State plainly that the codebase does not (fully) support auth today, and list exactly
      which pieces are missing.
-   - Outline what adding it entails and the decisions required (see "Decisions to surface").
-   - Ask for explicit approval and those decisions before writing code; prefer the user's
-     planning or spec flow for a net-new auth system.
+   - Present the proposed approach derived from the app, plus the open decisions behind it
+     (see "Decisions to surface"). Surface a recommendation to approve or edit, not a blank
+     questionnaire.
+   - Ask for explicit approval before writing code; prefer the user's planning or spec flow
+     for a net-new auth system.
 
    Stop here until the user confirms. Escalation means surface and ask, not proceed quietly.
 
 3. **If support exists, mirror the established pattern.** Read the existing implementation
    first and match its token strategy, signing, hashing, config keys, scope model, error
    handling, and response schemas. Extending is preferred over reinventing.
+
+## Propose an approach from the application
+
+When there is no auth system, do not present abstract choices alone. Read the application and
+derive a concrete proposal grounded in what it actually is, then offer it for approval.
+
+- **Identify the clients and surfaces**: is it a browser app, a first-party API, a
+  service-to-service backend, or a mix? This decides transport (bearer header versus cookies),
+  whether refresh and sessions are needed, and whether email-based flows apply.
+- **Find the account model and identity**: locate the existing user or account entity and how
+  a subject is identified. If there is none, that is part of the proposal.
+- **Choose token and signing strategy from that**: propose stateless access plus stateful
+  refresh (recommended) or sessions; symmetric signing for a single service, asymmetric when
+  other services verify tokens they do not issue.
+- **Select the grants and flows the app needs now**: password login, refresh, and only the
+  others the surfaces require; include registration/verification and password reset only if
+  the app has the email path for them.
+- **Fit hashing, lifetimes, and delegation to the context**: a slow password KDF with a
+  pepper, sensible access and refresh lifetimes, and whether scoped/narrowed tokens are
+  needed.
+- **Present the derived approach**, note where you inferred versus guessed, and call out the
+  open decisions (see "Decisions to surface") so the user approves or edits a real design. Do
+  not implement until approved.
+
+When extending an existing system, apply the same reading to the change: propose the new
+grant, flow, or field consistent with the established strategy.
 
 ## Token model
 
