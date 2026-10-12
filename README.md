@@ -23,6 +23,8 @@ npx skills add BaratovSokhibjon/agent-setup --list     # see the full list
   service.
 - **Get the database right** - best-practice guidance for PostgreSQL, MySQL, Vitess, and
   Neki: schema, indexing, query tuning, and scaling.
+- **Write in your own voice** - draft or revise outgoing work and casual messages with
+  `write-like-sokhibjon` to match Sokhibjon's English, Uzbek, or mixed Discord style.
 
 Run `--list` for the complete, per-skill breakdown, or browse `skills/`.
 
