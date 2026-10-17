@@ -25,6 +25,10 @@ npx skills add BaratovSokhibjon/agent-setup --list     # see the full list
   Neki: schema, indexing, query tuning, and scaling.
 - **Write in your own voice** - draft or revise outgoing work and casual messages with
   `write-like-sokhibjon` to match Sokhibjon's English, Uzbek, or mixed Discord style.
+- **Daily Progress & Planning** - `progress-planning` writes the day's P&P from tracked time
+  and real activity, adds it as a tab in a shared doc, and posts it to hstaff. It sequences
+  one fast, token-light source skill per tool: `hubstaff-pnp` (time), `hstaff-pnp` (history
+  and posting), `linear-pnp`, `github-pnp`, `discord-pnp` and `telegram-pnp` (evidence).
 
 Run `--list` for the complete, per-skill breakdown, or browse `skills/`.
 
