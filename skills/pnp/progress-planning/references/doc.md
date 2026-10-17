@@ -17,12 +17,7 @@ One Claude Doc, ids in [../config.md](../config.md). Use the Claude Docs tools (
 ## Day tab content
 
 1. The report exactly as posted to hstaff (starting `## YYYY-MM-DD`).
-2. `## Run notes` with short bullets:
-   - `Tracked X:XX, reported Y:YY`
-   - `Dropped (no evidence): <task> [H:MM], ...`
-   - `Stale To Do (n entries): <item>`
-   - `hstaff: posted id=<id>` or `hstaff: not posted, <error>`
-   - `Sources missing: <source, reason>` when any failed
+2. `## Run notes`: the bullets listed under Run notes in [format.md](format.md).
 
 ## Steps
 

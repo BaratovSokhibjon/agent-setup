@@ -1,74 +1,75 @@
-# P&P format and quality bar
+# P&P format and rules
+
+Rules follow the original P&P agent (`bride-sh/int-agent-bride-pnp`): Hubstaff is the
+outline, everything else is footnotes.
 
 ## Template (exact)
 
 ```
 ## YYYY-MM-DD
 
-## Done
+## DONE
 
 **<Hubstaff project name>**
-- [H:MM] <outcome> - <links>
-  - <optional sub-point: follow-up filed, number, second outcome>
+- [H:MM] <one sentence, links woven into the words they evidence>
+  - <optional sub-point: follow-up filed, a number, a second outcome>
 
-## To Do
+## TODO
 
 **<Hubstaff project name>**
-- <next step> - <link or "discuss in <link>">
+- <short next action, link woven in>
 ```
 
-- Headers are always `## Done` and `## To Do`. Project headers are the Hubstaff project
-  name exactly (`INT: WakilAI`, `INT: Infra - Administration`), bold, one blank line before.
-- Every item line starts `- [H:MM] `. Projects are ordered by tracked time, items within a
-  project by time, largest first.
-- Links are markdown: `[WK-404](url)`, `[editions-web #102](url)`; Discord and Telegram links
-  as `[thread](url)` or `[message](url)`. Never a bare "discuss in" with nothing after it.
+## Structure
 
-## Keep or drop
+- Section headers are the exact Hubstaff project names, bold. Projects ordered by tracked
+  time, largest first.
+- **Every Hubstaff task with tracked time is one `[H:MM]` bullet**, duration preserved. Never
+  drop, merge into another task, or reduce an entry. Only entries under 1 minute are left out.
+- GitHub, Linear, Discord, Telegram and Claude session evidence only enriches a bullet. It
+  never becomes its own header, section or bullet, and never overwrites a Hubstaff entry.
+- Match each piece of evidence to at most one bullet, the one whose project, repo and content
+  it actually describes. Unmatched evidence stays unused; never attach it to the nearest or
+  only bullet to fill space.
+- Hubstaff unavailable (error, not zero): label bullets by the clearest supported project
+  (never a raw repo name) and say Hubstaff was unavailable in the run notes. Never turn an
+  error into "no time tracked".
 
-- **Keep** a Hubstaff task when at least one piece of evidence (PR, commit, issue, Discord or
-  Telegram message) matches it. Its time is the task's Hubstaff time.
-- **Drop** a task with no evidence. List it in the run notes with its time so the user can
-  see what was left out. Do not invent an outcome from the task name alone.
-- **Merge** tasks on one subject into one line and add their times (for example "fix
-  inference failures" and "debug inference request failures").
-- **Fold** many small PRs into one outcome line with a sub-point; never one line per PR.
-- Tasks under 3 minutes with evidence fold into the closest related item of the same
-  project; without evidence they are dropped silently.
-- Evidence with no tracked time (a Discord decision, a review) can be a sub-point of a related
-  item, never its own timed line.
+## Wording
 
-## Writing the Done line (the bar: Dilshod's P&Ps)
+- **Completion wording** (shipped, merged, fixed, released) only with direct evidence: a merged
+  PR, a commit, a closed issue, or a message confirming it.
+- **Effort wording** (worked on, investigated, continued, set up) for Hubstaff-only entries.
+  Time proves effort, not completion.
+- Weave links into the phrase they evidence: `merged the [pinning PR](url)`, never a trailing
+  "as evidenced by [commit](url)". Short repo labels are fine: `[editions-web #102](url)`.
+- Be specific from the evidence: numbers (436 to 40 ms), versions, issue keys first
+  (`[WK-404](url): ...`), names of people whose work was reviewed or delegated.
+- Many PRs for one task: one sentence naming the outcomes, plus a sub-point if needed. Never
+  one bullet per PR.
+- No personal pronouns, no evaluation of the employee, no ceremony.
 
-1. **Outcome first.** Say what now works, shipped, or was decided: "pin conversations and
-   projects shipped", "ATMOS confirmed the error is on their side". Not "worked on",
-   "go through", "try testing".
-2. **Issue key first when there is one:** `[WK-404](url): ...`.
-3. **Concrete details from the evidence:** numbers (436 to 40 ms), versions, counts, names of
-   the people whose work he reviewed or delegated ("reviewed Abduvaliy's failover PR").
-4. **Follow-ups as sub-points:** `- follow-up filed: [WK-412](url) ...`.
-5. One line, two at most. Group small maintenance into one line ("Console polish: ...").
+## TODO
 
-## Writing the To Do
-
-1. Start from the previous P&P's To Dos. Drop the ones today's Done completes.
-2. Add his PRs still open at the end of the day, issues he owns that moved to In Progress or
-   In Review, promises he made in Discord or Telegram ("I'll check tomorrow"), and
-   `UNANSWERED` tags from `discord-pnp` and `telegram-pnp` that ask him for something.
-3. Each item is one verifiable next step with its link. Three to six items.
-4. An item carried over 3 or more entries gets flagged in the run notes as stale (not in the
-   posted report).
+- Fresh every day. Add a TODO only when today's evidence shows unfinished work, a next action
+  or an open blocker: his PRs still open, issues still In Progress or In Review, promises made
+  in chat, `UNANSWERED` tags asking him for something.
+- A previous P&P's TODO appears only when today's evidence shows activity on it or says it is
+  unfinished. Never carry one forward on its own.
+- Group under the Hubstaff project the follow-up continues (never a repo name). No durations.
+- A blocker states its reason and the unblock action.
+- Attach a link only when it concerns that exact follow-up; never reuse a link that evidences a
+  different item. Empty section when nothing is unfinished.
 
 ## Voice
 
-Apply `write-like-sokhibjon` within the template: plain verbs, ` - ` to join a clause, short
-lines, no ceremony. The template and links above take priority over register rules.
+Apply `write-like-sokhibjon` within these rules: plain verbs, ` - ` to join a clause, short
+lines. The template and rules above win over register guidance.
 
-## Example (quality reference)
+## Run notes (doc tab only, never posted)
 
-```
-**INT: LumioHubAI - Smart Office**
-- [1:33] [LSO-268](https://linear.app/...): auto-OUT live on all 3 branches (backend 0.7.16, AI 0.8.21, frontend 1.10.26), door cameras marked as entrance
-- [0:38] [LSO-310](https://linear.app/...): People / Dashboard 3-37x faster on prod (backend 0.7.15)
-  - follow-up filed: [LSO-318](https://linear.app/...) per-row queries and missing indexes
-```
+- `Tracked X:XX` and any Hubstaff entries under 1 minute left out
+- `Evidence not matched: <item>` for evidence that fit no bullet
+- `Previous TODOs not continued: <item>` with how many P&Ps it appeared in
+- `hstaff: posted id=<id>` or `hstaff: not posted, <error>`
+- `Sources missing: <source, reason>`

@@ -2,7 +2,7 @@
 name: hstaff-pnp
 description: >-
   Read and write Progress & Planning entries in hstaff (HumbleBeeAI's staff system): fetch
-  recent P&Ps and their To Do lists for carry-over, check a date's status (on_time, late,
+  the last 4 days of P&Ps as context, check a date's status (on_time, late,
   missed, day_off), and create or update the entry for a date. Use when progress-planning
   needs history or is ready to post, or when asked about P&P history, missed days, or to
   post or fix a P&P in hstaff.
@@ -22,14 +22,16 @@ P&P thread, so posting here is posting everywhere. Rule: no em-dashes in output.
 
 ## Calls
 
-**History (carry-over and status):**
+**History (context and status):**
 
 ```
-get_progress_planning_by_date_range(start_date: D-7, end_date: D-1)
+get_progress_planning_by_date_range(start_date: D-4, end_date: D-1)
 ```
 
-Optional `status` filter: `on_time`, `late`, `missed`, `day_off`. Take the newest entry with
-content. Use `get_progress_planning_by_id(id)` only when a list row lacks full content.
+Optional `status` filter: `on_time`, `late`, `missed`, `day_off`. Use
+`get_progress_planning_by_id(id)` only when a list row lacks full content. Reject entries
+outside the range. History is context only: it never shapes today's structure and its
+content is never today's work.
 
 **Post:**
 
@@ -60,6 +62,6 @@ the user reconnects it. Then:
 
 ## Output
 
-- History: `<date> | <status> | <id>` per entry, then the newest entry's To Do lines verbatim,
-  each with the number of consecutive entries it has appeared in.
+- History: `<date> | <status> | <id>` per entry, then each entry's TODO lines verbatim with
+  its date.
 - Post: `posted <date> id=<id>` or `failed <date>: <error>`.
