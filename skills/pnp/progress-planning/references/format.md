@@ -24,8 +24,9 @@ outline, everything else is footnotes.
 
 - Section headers are the exact Hubstaff project names, bold. Projects ordered by tracked
   time, largest first.
-- **Every Hubstaff task with tracked time is one `[H:MM]` bullet**, duration preserved. Never
-  drop, merge into another task, or reduce an entry. Only entries under 1 minute are left out.
+- **Every Hubstaff task `hubstaff-pnp` returns is one `[H:MM]` bullet**, with its duration as
+  given (rounded up to 5 minutes; tasks under 5 minutes are already dropped). Never drop,
+  merge into another task, or reduce an entry.
 - GitHub, Linear, Discord, Telegram and Claude session evidence only enriches a bullet. It
   never becomes its own header, section or bullet, and never overwrites a Hubstaff entry.
 - Match each piece of evidence to at most one bullet, the one whose project, repo and content
@@ -68,7 +69,7 @@ lines. The template and rules above win over register guidance.
 
 ## Run notes (doc tab only, never posted)
 
-- `Tracked X:XX` and any Hubstaff entries under 1 minute left out
+- `Tracked X:XX` and the `DROPPED` (under 5 minutes) tasks from `hubstaff-pnp`
 - `Evidence not matched: <item>` for evidence that fit no bullet
 - `Previous TODOs not continued: <item>` with how many P&Ps it appeared in
 - `hstaff: posted id=<id>` or `hstaff: not posted, <error>`

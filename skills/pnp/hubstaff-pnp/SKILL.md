@@ -2,9 +2,9 @@
 name: hubstaff-pnp
 description: >-
   Fetch one person's Hubstaff tracked time for a work date, grouped by project and task, as a
-  compact table for writing a Progress & Planning report. Use when progress-planning needs
-  the day's time backbone, or when asked how much time went to which task on a given day.
-  Read-only; two calls at most for a normal day.
+  compact table for writing a Progress & Planning report. Uses a bundled script that calls the
+  Hubstaff REST API directly (one paginated activities call plus name lookups), with a single
+  MCP call as fallback. Use when progress-planning needs the day's time outline.
 metadata:
   keywords:
     - hubstaff
@@ -16,54 +16,44 @@ metadata:
 
 # hubstaff-pnp
 
-Return the day's tracked time per task, nothing else. Rule: no em-dashes in output.
+Return the day's tracked time per task, nothing else. No em-dashes in output.
 
-## Fixed ids
+## Steps
 
-- Organization `HumbleBeeAI`: `542238`
-- Sokhibjon: user `2841882`
-- Hubstaff profile timezone: Asia/Seoul. Report timezone: UZT (UTC+5). Work date D in UZT
-  is the UTC window `D-1T19:00:00Z` to `DT19:00:00Z`.
+1. **Script (primary).** Needs `HUBSTAFF_REFRESH_TOKEN` (or `HUBSTAFF_ACCESS_TOKEN`) in the
+   environment.
+   ```bash
+   python3 -I skills/pnp/hubstaff-pnp/scripts/hubstaff_day.py <YYYY-MM-DD>
+   ```
+   Defaults: org `542238`, timezone `Asia/Tashkent` (override with `HUBSTAFF_ORG_ID`,
+   `PNP_TIMEZONE`). Use its output as is.
+2. **Fallback, only if the script prints `status: error`.** Exactly one MCP call, no
+   `list_organizations`, `list_endpoints` or `describe_endpoint`:
+   ```
+   Hubstaff call_endpoint get_organizations_organization_id_activities
+     {organization_id: 542238, user_ids: [2841882],
+      time_slot: {start: "<D-1>T19:00:00Z", stop: "<D>T19:00:00Z"}, include: ["projects", "tasks"]}
+   ```
+   Page with `page_start_id` only while `pagination.next_page_start_id` is set. Sum `tracked`
+   per task, then apply the same rules as the script: drop tasks under 5 minutes, round each
+   duration up to the nearest 5 minutes, strip a leading `# ` from task names.
+3. **Both fail:** return `status: error | <script error> | <mcp error>`. Never report an error
+   as zero time.
 
-Skip `list_organizations`, `list_endpoints` and `describe_endpoint`; the calls below are
-already known.
-
-## Calls
-
-**Normal day (all work before 20:00 UZT, which is KST midnight):** one call.
-
-```
-call_endpoint get_organizations_organization_id_activities_daily
-  {organization_id: 542238, user_ids: [2841882],
-   date: {start: D, stop: D}, include: ["projects", "tasks"]}
-```
-
-Rows give `project_id`, `task_id`, `tracked` (seconds), `created_at` (first activity) and
-`updated_at`. Side-loaded `projects[].name` and `tasks[].summary` give the names.
-
-**Late day (tracking after 20:00 UZT) or exact boundaries needed:** use 10-minute slots.
-
-```
-call_endpoint get_organizations_organization_id_activities
-  {organization_id: 542238, user_ids: [2841882],
-   time_slot: {start: "<D-1>T19:00:00Z", stop: "<D>T19:00:00Z"}, include: ["projects", "tasks"]}
-```
-
-Sum `tracked` per `task_id`; first and last `time_slot` give the task's time range. Page
-with `page_start_id` while the response has `pagination.next_page_start_id`.
-
-**Fallback:** hstaff `get_task_time(date)` returns the same time grouped by project and task.
-
-## Output
-
-One line per task, sorted by project then tracked time descending:
+## Output (what the script prints)
 
 ```
-<project name> | <task_id> | <task summary> | <H:MM> | <first UTC>..<last UTC>
+status: ok | <date> (<timezone>) | total <H:MM>
+PROJECT | <project name> | <H:MM>
+  [<H:MM>] <task summary> | <first slot UTC>..<last slot UTC>
+DROPPED | <project> | <task> | <seconds>s
 ```
 
-- `H:MM` = seconds rounded to the nearest minute. Tasks under 1 minute are left out.
-- Strip a leading `# ` from task summaries.
-- End with `TOTAL | <H:MM>` and one `PROJECT | <name> | <H:MM>` line per project.
+`DROPPED` lines are tasks under 5 minutes; they go to the run notes, not the report.
 
-Do not interpret the work; matching time to evidence happens in `progress-planning`.
+## Token note
+
+Hubstaff may rotate the refresh token on exchange; the script then prints
+`note: Hubstaff rotated the refresh token` to stderr and, when `HUBSTAFF_TOKEN_FILE` is set,
+writes the new pair there. In an ephemeral cloud session the rotated token is lost, so if the
+stored secret stops working, generate a new token and update the environment secret.
