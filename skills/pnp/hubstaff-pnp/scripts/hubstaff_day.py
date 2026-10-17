@@ -33,6 +33,8 @@ API_URL = "https://api.hubstaff.com/v2"
 DISCOVERY_URL = "https://account.hubstaff.com/.well-known/openid-configuration"
 TIMEOUT_SECONDS = 15
 MIN_TASK_SECONDS = 5 * 60
+# Cloudflare in front of Hubstaff rejects the default urllib agent (error 1010).
+USER_AGENT = "hubstaff-pnp/1.0 (+https://github.com/BaratovSokhibjon/agent-setup)"
 
 
 class HubstaffError(RuntimeError):
@@ -45,6 +47,7 @@ def _http(method, url, *, token=None, params=None, form=None):
     data = urllib.parse.urlencode(form).encode() if form else None
     request = urllib.request.Request(url, data=data, method=method)
     request.add_header("Accept", "application/json")
+    request.add_header("User-Agent", USER_AGENT)
     if token:
         request.add_header("Authorization", f"Bearer {token}")
     try:
@@ -72,7 +75,7 @@ def refresh_access_token():
         raise HubstaffError("HUBSTAFF_REFRESH_TOKEN is not set")
     status, discovery = _http("GET", DISCOVERY_URL)
     if status != 200 or "token_endpoint" not in discovery:
-        raise HubstaffError("OpenID discovery did not return a token endpoint")
+        raise HubstaffError(f"OpenID discovery failed ({status}): {discovery}")
     status, payload = _http(
         "POST",
         discovery["token_endpoint"],
