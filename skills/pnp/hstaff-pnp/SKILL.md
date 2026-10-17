@@ -22,8 +22,10 @@ P&P thread, so posting here is posting everywhere. Rule: no em-dashes in output.
 
 ## Steps
 
-Primary path is the bundled script; it talks to the hstaff MCP server directly with
-`HSTAFF_EMAIL` and `HSTAFF_PASSWORD` from the environment, so no connector is needed.
+Primary path is the bundled script; it talks to the hstaff MCP server directly, so no
+connector is needed. Auth from the environment: `HSTAFF_TOKEN` (an hstaff API token) if set,
+otherwise `HSTAFF_EMAIL` and `HSTAFF_PASSWORD`, which it exchanges for a JWT through the
+server's login tool.
 
 1. **History (context and status):**
    ```bash
@@ -49,7 +51,8 @@ between it is `late`. Convert to the run's timezone when reporting.
 
 ## Fallback when hstaff fails
 
-`HSTAFF_EMAIL and HSTAFF_PASSWORD are not set` or `401 TOKEN_MISSING` means no working
+`set HSTAFF_TOKEN, or HSTAFF_EMAIL and HSTAFF_PASSWORD`, `Invalid email or password` or
+`401 TOKEN_MISSING` means no working
 credentials; nothing will post until they are added to the environment. Then:
 
 - History: read the Discord P&P thread `1279361405249650802` (guild `1138065656915443722`)

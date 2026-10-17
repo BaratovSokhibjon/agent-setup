@@ -4,8 +4,12 @@
 Talks to the hstaff MCP server over streamable HTTP the way bride-sh/int-agent-bride-pnp
 does: credentials go in X-HSTAFF-EMAIL / X-HSTAFF-PASSWORD headers. Standard library only.
 
+Auth, in order: HSTAFF_TOKEN (an hstaff API token) sent as a Bearer token; otherwise
+HSTAFF_EMAIL / HSTAFF_PASSWORD, used to call the server's login tool for a JWT.
+
 Env:
-  HSTAFF_EMAIL, HSTAFF_PASSWORD   required
+  HSTAFF_TOKEN                    optional personal API token
+  HSTAFF_EMAIL, HSTAFF_PASSWORD   required when HSTAFF_TOKEN is not set
   HSTAFF_MCP_URL                  default https://hstaff.humblebee.ai/mcp
 
 Usage:
@@ -34,15 +38,18 @@ class HstaffError(RuntimeError):
 
 
 class McpClient:
-    def __init__(self, url, email, password):
+    def __init__(self, url, email=None, password=None, token=None):
         self.url = url
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",
             "User-Agent": USER_AGENT,
-            "X-HSTAFF-EMAIL": email,
-            "X-HSTAFF-PASSWORD": password,
         }
+        if email and password:
+            self.headers["X-HSTAFF-EMAIL"] = email
+            self.headers["X-HSTAFF-PASSWORD"] = password
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
         self.session_id = None
         self.next_id = 1
 
@@ -129,14 +136,42 @@ def _parse_response(body, message_id):
     raise HstaffError(f"no reply for request {message_id}: {body[:200]}")
 
 
+def _find_access_token(payload):
+    """Return the first access token found anywhere in a login response."""
+    if isinstance(payload, dict):
+        for key in ("access_token", "accessToken", "token"):
+            if isinstance(payload.get(key), str) and payload[key]:
+                return payload[key]
+        values = payload.values()
+    elif isinstance(payload, list):
+        values = payload
+    else:
+        return None
+    for value in values:
+        found = _find_access_token(value)
+        if found:
+            return found
+    return None
+
+
 def client_from_env():
+    url = os.environ.get("HSTAFF_MCP_URL", "https://hstaff.humblebee.ai/mcp")
+    token = os.environ.get("HSTAFF_TOKEN")
+    if token:
+        client = McpClient(url, token=token)
+        client.connect()
+        return client
     email = os.environ.get("HSTAFF_EMAIL")
     password = os.environ.get("HSTAFF_PASSWORD")
     if not email or not password:
-        raise HstaffError("HSTAFF_EMAIL and HSTAFF_PASSWORD are not set")
-    client = McpClient(
-        os.environ.get("HSTAFF_MCP_URL", "https://hstaff.humblebee.ai/mcp"), email, password
-    )
+        raise HstaffError("set HSTAFF_TOKEN, or HSTAFF_EMAIL and HSTAFF_PASSWORD")
+    client = McpClient(url, email=email, password=password)
+    client.connect()
+    login = client.call("login_", {"email": email, "password": password})
+    access_token = _find_access_token(login)
+    if not access_token:
+        raise HstaffError("login returned no access token")
+    client = McpClient(url, token=access_token)
     client.connect()
     return client
 
