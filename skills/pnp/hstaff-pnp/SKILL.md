@@ -20,30 +20,27 @@ metadata:
 hstaff holds the official P&P. The status-bot mirrors each entry into the person's Discord
 P&P thread, so posting here is posting everywhere. Rule: no em-dashes in output.
 
-## Calls
+## Steps
 
-**History (context and status):**
+Primary path is the bundled script; it talks to the hstaff MCP server directly with
+`HSTAFF_EMAIL` and `HSTAFF_PASSWORD` from the environment, so no connector is needed.
 
-```
-get_progress_planning_by_date_range(start_date: D-4, end_date: D-1)
-```
-
-Optional `status` filter: `on_time`, `late`, `missed`, `day_off`. Use
-`get_progress_planning_by_id(id)` only when a list row lacks full content. Reject entries
-outside the range. History is context only: it never shapes today's structure and its
-content is never today's work.
-
-**Post:**
-
-```
-create_progress_planning(date: D, content: "<report markdown>")
-```
-
-If it refuses because an entry exists for D, send the same arguments to
-`update_progress_planning`. Edits are allowed only within hstaff's allowed days back; a
-refusal there is final, so report it.
-
-**Tracked time helper:** `get_task_time(date: D)` (same data as Hubstaff, grouped by project).
+1. **History (context and status):**
+   ```bash
+   python3 -I skills/pnp/hstaff-pnp/scripts/hstaff_pnp.py history <D-4> <D-1>
+   ```
+   Returns `entries` with date, status and content. Reject entries outside the range.
+   History is context only: it never shapes today's structure and its content is never
+   today's work.
+2. **Post:** write the report to a temp file, then
+   ```bash
+   python3 -I skills/pnp/hstaff-pnp/scripts/hstaff_pnp.py post <D> <report.md>
+   ```
+   It checks whether D already has an entry and creates or updates it. Edits are allowed only
+   within hstaff's allowed days back; a refusal there is final, so report it.
+3. **Script fails** (`"status": "error"`): use the hstaff connector tools if this session has
+   them (`get_progress_planning_by_date_range`, `create_progress_planning`,
+   `update_progress_planning`, same arguments). Otherwise use the fallback below.
 
 ## Deadline
 
@@ -52,8 +49,8 @@ between it is `late`. Convert to the run's timezone when reporting.
 
 ## Fallback when hstaff fails
 
-A `401 TOKEN_MISSING` means the hstaff connector is not signed in; nothing will post until
-the user reconnects it. Then:
+`HSTAFF_EMAIL and HSTAFF_PASSWORD are not set` or `401 TOKEN_MISSING` means no working
+credentials; nothing will post until they are added to the environment. Then:
 
 - History: read the Discord P&P thread `1279361405249650802` (guild `1138065656915443722`)
   with Discord `read_messages(limit: 30)`. Status-bot messages starting `## YYYY-MM-DD` are
