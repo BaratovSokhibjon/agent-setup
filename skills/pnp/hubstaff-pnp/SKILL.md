@@ -25,18 +25,21 @@ Return the day's tracked time per task, nothing else. No em-dashes in output.
    ```bash
    python3 -I skills/pnp/hubstaff-pnp/scripts/hubstaff_day.py <YYYY-MM-DD>
    ```
-   Defaults: org `542238`, timezone `Asia/Tashkent` (override with `HUBSTAFF_ORG_ID`,
-   `PNP_TIMEZONE`). Use its output as is.
-2. **Fallback, only if the script prints `status: error`.** Exactly one MCP call, no
-   `list_organizations`, `list_endpoints` or `describe_endpoint`:
+   Org defaults to `542238` (`HUBSTAFF_ORG_ID`). The day's timezone is the Hubstaff profile
+   `time_zone`, unless `PNP_TIMEZONE` is set. Use its output as is; its `WINDOW` line is the
+   UTC window every other source uses.
+2. **Fallback, only if the script prints `status: error`.** No `list_organizations`,
+   `list_endpoints` or `describe_endpoint`. First `call_endpoint get_users_me` for
+   `user.time_zone` (or use `PNP_TIMEZONE`), and set WS/WE = local midnight to midnight of D,
+   in UTC. Then one call:
    ```
    Hubstaff call_endpoint get_organizations_organization_id_activities
      {organization_id: 542238, user_ids: [2841882],
-      time_slot: {start: "<D-1>T19:00:00Z", stop: "<D>T19:00:00Z"}, include: ["projects", "tasks"]}
+      time_slot: {start: WS, stop: WE}, include: ["projects", "tasks"]}
    ```
    Page with `page_start_id` only while `pagination.next_page_start_id` is set. Sum `tracked`
-   per task, then apply the same rules as the script: drop tasks under 5 minutes, round each
-   duration up to the nearest 5 minutes, strip a leading `# ` from task names.
+   per task, then apply the script's rules: drop tasks under 5 minutes, round each duration up
+   to the nearest 5 minutes, strip a leading `# ` from task names.
 3. **Both fail:** return `status: error | <script error> | <mcp error>`. Never report an error
    as zero time.
 
@@ -44,6 +47,7 @@ Return the day's tracked time per task, nothing else. No em-dashes in output.
 
 ```
 status: ok | <date> (<timezone>) | total <H:MM>
+WINDOW | <WS> | <WE>
 PROJECT | <project name> | <H:MM>
   [<H:MM>] <task summary> | <first slot UTC>..<last slot UTC>
 DROPPED | <project> | <task> | <seconds>s

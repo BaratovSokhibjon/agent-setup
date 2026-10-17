@@ -25,7 +25,7 @@ output.
 - Seed repos: `wakil-ai/editions-web`, `wakil-ai/editions-api`, `wakil-ai/editions-gateway`,
   `wakil-ai/rest-api-ai`, `wakil-ai/planning`, `wakil-ai/authentik`, `wakil-ai/nginx-config`,
   `wakil-ai/stack-editions`
-- Window W: work date D in UZT = `D-1T19:00:00Z` to `DT19:00:00Z`
+- Window W: `WS` to `WE` from the `WINDOW` line of `hubstaff-pnp`
 
 ## Repo set (search and user endpoints are blocked in cloud sessions)
 

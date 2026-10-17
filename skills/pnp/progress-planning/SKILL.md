@@ -28,8 +28,9 @@ Rule for this skill and your output: no em-dashes. Use ` - ` or a colon.
 
 ## Inputs
 
-- **Date D.** The work date in UZT (Asia/Tashkent, UTC+5). Default: today in UZT. A run
-  before 06:00 UZT reports the previous day. Window W = `D-1T19:00:00Z` to `DT19:00:00Z`.
+- **Date D.** The work date in the user's timezone, which `hubstaff-pnp` reads from the
+  Hubstaff profile on every run. Default: today there; a run before 06:00 local reports the
+  previous day. Window W = the `WINDOW` line `hubstaff-pnp` prints; every other source uses it.
 - **Mode.** Default publish (doc tab + hstaff). "Draft" or "preview" means doc tab only.
 
 ## Sources

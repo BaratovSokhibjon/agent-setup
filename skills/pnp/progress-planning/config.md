@@ -4,10 +4,9 @@ Values the orchestrator needs. Source-specific ids live in each `*-pnp` skill.
 
 ## Time
 
-- Report timezone: UZT, Asia/Tashkent (UTC+5). Work date D = `D-1T19:00:00Z` to
-  `DT19:00:00Z`.
-- hstaff counts a P&P on time until 21:00 KST (17:00 UZT), late until 22:00Z (03:00 UZT next
-  day), then missed.
+- Report timezone: the Hubstaff profile `time_zone`, read on every run by `hubstaff-pnp`
+  (override with `PNP_TIMEZONE`). Moving cities = change the timezone in Hubstaff only.
+- hstaff counts a P&P on time until 21:00 KST (12:00Z), late until 22:00Z, then missed.
 
 ## Progress & Planning doc (Claude Docs)
 

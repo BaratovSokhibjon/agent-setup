@@ -48,7 +48,7 @@ refusal there is final, so report it.
 ## Deadline
 
 21:00 KST (12:00Z). The bot reminds at 11:30Z, and marks the day `missed` at 22:00Z; in
-between it is `late`. In UZT: on time until 17:00, late until 03:00 next day.
+between it is `late`. Convert to the run's timezone when reporting.
 
 ## Fallback when hstaff fails
 

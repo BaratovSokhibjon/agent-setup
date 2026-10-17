@@ -10,7 +10,7 @@ Env:
   HUBSTAFF_ACCESS_TOKEN   optional, used first
   HUBSTAFF_ORG_ID         default 542238 (HumbleBeeAI)
   HUBSTAFF_TOKEN_FILE     optional; rotated tokens are written here (mode 600)
-  PNP_TIMEZONE            default Asia/Tashkent
+  PNP_TIMEZONE            optional override; default is the Hubstaff profile time_zone
 
 Usage: hubstaff_day.py [YYYY-MM-DD] [--json]
 Exit code 0 with "status: ok", or 1 with "status: error" and the reason.
@@ -182,11 +182,11 @@ def aggregate(entries, task_names, project_names):
 
 def collect(date_text=None):
     org_id = os.environ.get("HUBSTAFF_ORG_ID", "542238")
-    timezone_name = os.environ.get("PNP_TIMEZONE", "Asia/Tashkent")
     status, payload = api_get("/users/me")
     if status != 200:
         raise HubstaffError(f"users/me failed ({status}): {payload}")
     user = payload.get("user", {})
+    timezone_name = os.environ.get("PNP_TIMEZONE") or user.get("time_zone") or "UTC"
     start, stop, local_day = day_window(date_text, timezone_name)
     entries = fetch_activities(org_id, user["id"], start, stop)
 
@@ -214,8 +214,10 @@ def collect(date_text=None):
 
 
 def render(result):
+    start, stop = result["window_utc"]
     lines = [
-        f"status: ok | {result['date']} ({result['timezone']}) | total {result['total']}"
+        f"status: ok | {result['date']} ({result['timezone']}) | total {result['total']}",
+        f"WINDOW | {start} | {stop}",
     ]
     ordered = sorted(
         result["projects"].items(),
