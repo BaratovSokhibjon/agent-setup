@@ -27,16 +27,12 @@ output.
   `wakil-ai/stack-editions`
 - Window W: work date D in UZT = `D-1T19:00:00Z` to `DT19:00:00Z`
 
-## Why the repo set comes first
-
-Cloud sessions block org-wide and user-wide endpoints (`search/*`, `users/*/events`) with a
-403 that says sessions are bound to their repositories. Only `repos/{owner}/{repo}/...` works,
-and only for attached repos. So:
+## Repo set (search and user endpoints are blocked in cloud sessions)
 
 1. Repo set = seed repos + `REPOS` from `linear-pnp` + any `github.com/<owner>/<repo>` in the
    day's Discord or Telegram messages, Hubstaff task summaries, or the previous P&P.
-2. For each repo not attached yet: `add_repo(owner, repo, access: "read")`. Do not clone; the
-   API is enough. A refusal goes into the output as `NO_ACCESS | <owner/repo>`.
+2. For each repo not attached yet: `add_repo(owner, repo, access: "read")`. Do not clone. A
+   refusal goes into the output as `NO_ACCESS | <owner/repo>`.
 
 ## Calls per repo
 

@@ -53,7 +53,8 @@
 
 1. Start from the previous P&P's To Dos. Drop the ones today's Done completes.
 2. Add his PRs still open at the end of the day, issues he owns that moved to In Progress or
-   In Review, and promises he made in Discord or Telegram ("I'll check tomorrow").
+   In Review, promises he made in Discord or Telegram ("I'll check tomorrow"), and
+   `UNANSWERED` tags from `discord-pnp` and `telegram-pnp` that ask him for something.
 3. Each item is one verifiable next step with its link. Three to six items.
 4. An item carried over 3 or more entries gets flagged in the run notes as stale (not in the
    posted report).
