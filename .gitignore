@@ -1,2 +1,6 @@
 # Local reference clones used to derive skills; never committed.
 .reference/
+
+# Python bytecode from running skill scripts.
+__pycache__/
+*.pyc
